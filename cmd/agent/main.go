@@ -9,6 +9,9 @@ import (
 	"simple-procmon/config"
 	"simple-procmon/db"
 	"simple-procmon/internal/agent"
+	"simple-procmon/internal/tui"
+
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 func main() {
@@ -39,6 +42,19 @@ func main() {
 	go cleaner.Start()
 
 	log.Println("procmon agent started")
+
+	model := tui.New(database)
+
+	p := tea.NewProgram(
+		model,
+		tea.WithAltScreen(),       // full screen TUI
+		tea.WithMouseCellMotion(), // mouse support
+	)
+
+	if _, err := p.Run(); err != nil {
+		log.Printf("error running TUI: %v", err)
+		os.Exit(1)
+	}
 
 	// Block until signal
 	quit := make(chan os.Signal, 1)
